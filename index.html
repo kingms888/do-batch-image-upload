@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>Batch Image Upload · Etsy Alt‑Text SEO Tool</title>
+  <meta name="description" content="Upload multiple product images at once, generate SEO‑friendly alt text for Etsy listings. Built for sellers who need fast, bulk image processing.">
+  <meta name="keywords" content="etsy image alt text seo, batch image upload, etsy seller tool, bulk alt text generator, product image optimizer">
+  <meta name="author" content="Etsy Seller Tool Lab">
+  <meta name="robots" content="index, follow">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #f5f3f1;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      padding: 1rem 0.75rem 2rem;
+      color: #222;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 28px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.05);
+      padding: 1.5rem 1.2rem 2rem;
+    }
+    header {
+      border-bottom: 1px solid #eae2da;
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      background: linear-gradient(145deg, #2a4b3c, #1d362b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: inline-block;
+    }
+    .badge {
+      background: #d9e6d2;
+      padding: 0.2rem 0.8rem;
+      border-radius: 40px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #1e3a2b;
+      display: inline-block;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+    .tool-subhead {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      align-items: center;
+      margin: 0.5rem 0 0;
+    }
+    .tool-subhead span {
+      background: #f0ebe5;
+      padding: 0.2rem 0.7rem;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: #3f2e1e;
+    }
+    .upload-area {
+      background: #fcfaf8;
+      border: 2px dashed #cbbfb3;
+      border-radius: 24px;
+      padding: 2rem 1rem;
+      text-align: center;
+      transition: background 0.2s, border-color 0.2s;
+      margin-bottom: 1.8rem;
+    }
+    .upload-area.dragover {
+      background: #f0f3eb;
+      border-color: #5f7b64;
+    }
+    .upload-area input[type="file"] {
+      display: none;
+    }
+    .upload-btn {
+      background: #1d362b;
+      color: white;
+      border: none;
+      padding: 0.8rem 2rem;
+      border-radius: 60px;
+      font-weight: 500;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .upload-btn:hover {
+      background: #2b4a3a;
+    }
+    .upload-btn:active {
+      transform: scale(0.97);
+    }
+    .upload-hint {
+      margin-top: 0.8rem;
+      font-size: 0.85rem;
+      color: #5f4e3d;
+    }
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0 1rem;
+    }
+    .image-card {
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+      border: 1px solid #e7dfd7;
+      overflow: hidden;
+      transition: box-shadow 0.15s;
+    }
+    .image-card:hover {
+      box-shadow: 0 8px 18px rgba(0,0,0,0.06);
+    }
+    .image-card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      display: block;
+      background: #ece6df;
+    }
+    .image-card .card-body {
+      padding: 0.6rem 0.7rem 0.7rem;
+    }
+    .image-card .filename {
+      font-size: 0.7rem;
+      color: #5f4e3d;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 0.3rem;
+    }
+    .image-card .alt-text {
+      font-size: 0.75rem;
+      background: #f4f0ea;
+      padding: 0.3rem 0.5rem;
+      border-radius: 30px;
+      color: #1d362b;
+      display: inline-block;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 1.5rem 0;
+      color: #6f5e4d;
+      font-size: 0.9rem;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+      margin: 0.5rem 0 1.2rem;
+    }
+    .btn-group {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+    .btn-secondary {
+      background: #eae2da;
+      border: none;
+      padding: 0.5rem 1.2rem;
+      border-radius: 40px;
+      font-weight: 500;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-secondary:hover {
+      background: #ddd3c9;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #b7aa9c;
+      padding: 0.5rem 1.2rem;
+      border-radius: 40px;
+      font-weight: 500;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-outline:hover {
+      background: #f0ebe5;
+    }
+    .ad-card {
+      background: #f3efe9;
+      border-radius: 20px;
+      padding: 0.8rem 1rem;
+      margin: 1.2rem 0;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid #e1d7cd;
+    }
+    .ad-card .ad-label {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #7d6b59;
+    }
+    .ad-card .ad-content {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .ad-card .ad-cta {
+      background: #1d362b;
+      color: white;
+      padding: 0.3rem 1rem;
+      border-radius: 40px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .affiliate-resources {
+      background: #f9f6f2;
+      border-radius: 20px;
+      padding: 1rem 1.2rem;
+      margin: 1.5rem 0 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem 1.5rem;
+      align-items: center;
+      border: 1px solid #e7ddd3;
+    }
+    .affiliate-resources h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #2b4a3a;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .affiliate-resources a {
+      color: #1d362b;
+      text-decoration: underline 1px dotted #b7aa9c;
+      font-size: 0.85rem;
+      margin-right: 0.8rem;
+    }
+    .affiliate-resources a:hover {
+      text-decoration: underline;
+    }
+    .privacy-note {
+      font-size: 0.7rem;
+      color: #6f5e4d;
+      background: #f3efe9;
+      padding: 0.5rem 1rem;
+      border-radius: 60px;
+      display: inline-block;
+      margin-top: 1.2rem;
+    }
+    footer {
+      margin-top: 2rem;
+      border-top: 1px solid #eae2da;
+      padding-top: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+    }
+    @media (max-width: 600px) {
+      .container { padding: 1rem 0.8rem; }
+      h1 { font-size: 1.4rem; }
+      .image-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+      .actions { flex-direction: column; align-items: stretch; }
+      .btn-group { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <h1>📸 Batch Alt‑Text</h1>
+      <span class="badge">Etsy SEO</span>
+      <div class="tool-subhead">
+        <span>⚡ bulk upload</span>
+        <span>🏷️ alt text generator</span>
+        <span>🧪 beta test</span>
+      </div>
+    </div>
+    <div style="font-size:0.8rem; color:#5f4e3d;">v2.1 · seller tool</div>
+  </header>
+
+  <!-- Upload area -->
+  <div class="upload-area" id="uploadArea">
+    <label for="fileInput" class="upload-btn">
+      <span>⬆</span> Choose images
+    </label>
+    <input type="file" id="fileInput" accept="image/*" multiple>
+    <div class="upload-hint">or drag & drop images here · JPG, PNG, WebP</div>
+  </div>
+
+  <!-- Image grid + actions -->
+  <div id="imageContainer">
+    <div class="empty-state" id="emptyState">✨ No images yet — upload to generate SEO alt‑text</div>
+    <div class="image-grid" id="imageGrid" style="display: none;"></div>
+  </div>
+
+  <div class="actions" id="actionBar" style="display: none;">
+    <div class="btn-group">
+      <button class="btn-secondary" id="clearAllBtn">🗑️ Clear all</button>
+      <button class="btn-outline" id="exportAltBtn">📋 Copy alt‑text list</button>
+    </div>
+    <span style="font-size:0.75rem; color:#5f4e3d;"><span id="imageCount">0</span> images</span>
+  </div>
+
+  <!-- Ad placeholder (visible) -->
+  <div class="ad-card">
+    <div>
+      <div class="ad-label">📢 sponsor</div>
+      <div class="ad-content">
+        <span style="font-weight:500; font-size:0.9rem;">EtsyHacks SEO toolkit</span>
+        <span style="font-size:0.75rem; color:#3f2e1e;">bulk alt‑text & tags</span>
+      </div>
+    </div>
+    <a href="#" class="ad-cta" onclick="reportEvent('ad_click', {ad:'etsy_hacks'}); return false;">Learn more</a>
+  </div>
+
+  <!-- Affiliate / resource section -->
+  <div class="affiliate-resources">
+    <h3>🔗 seller resources</h3>
+    <div>
+      <a href="#" onclick="reportEvent('affiliate_click', {resource:'etsy_alt_text_guide'}); return false;">Alt‑text SEO guide</a>
+      <a href="#" onclick="reportEvent('affiliate_click', {resource:'bulk_csv_editor'}); return false;">Shopify CSV editor</a>
+      <a href="#" onclick="reportEvent('affiliate_click', {resource:'fba_calculator'}); return false;">Amazon FBA profit calc</a>
+      <a href="#" onclick="reportEvent('affiliate_click', {resource:'trip_splitter'}); return false;">Trip expense splitter</a>
+    </div>
+  </div>
+
+  <!-- Privacy note -->
+  <div class="privacy-note">
+    🔒 events may be counted anonymously for product improvement. 
+    <span style="opacity:0.7;">No personal data collected.</span>
+  </div>
+
+  <footer>
+    <span style="font-size:0.7rem; color:#6f5e4d;">🧪 beta · 5 Etsy seller testers</span>
+    <span style="font-size:0.7rem; color:#6f5e4d;">batch image upload prototype</span>
+  </footer>
+</div>
+
+<script>
+  (function() {
+    // ---------- metrics / privacy ----------
+    window.ORGANISM_METRICS_ENDPOINT = window.ORGANISM_METRICS_ENDPOINT || null;
+
+    window.reportEvent = function(name, payload = {}) {
+      if (typeof window.ORGANISM_METRICS_ENDPOINT === 'string' && window.ORGANISM_METRICS_ENDPOINT.length > 0) {
+        try {
+          const body = JSON.stringify({ event: name, payload: payload, timestamp: new Date().toISOString() });
+          // use sendBeacon if available, else fallback to fetch (no blocking)
+          if (navigator.sendBeacon) {
+            navigator.sendBeacon(window.ORGANISM_METRICS_ENDPOINT, body);
+          } else {
+            fetch(window.ORGANISM_METRICS_ENDPOINT, {
+              method: 'POST',
+              body: body,
+              keepalive: true,
+              headers: { 'Content-Type': 'application/json' }
+            }).catch(() => {});
+          }
+        } catch (e) {
+          // silently fail
+        }
+      }
+    };
+
+    // ---------- DOM refs ----------
+    const fileInput = document.getElementById('fileInput');
+    const uploadArea = document.getElementById('uploadArea');
+    const imageGrid = document.getElementById('imageGrid');
+    const emptyState = document.getElementById('emptyState');
+    const actionBar = document.getElementById('actionBar');
+    const imageCountSpan = document.getElementById('imageCount');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    const exportAltBtn = document.getElementById('exportAltBtn');
+
+    // ---------- state ----------
+    let images = []; // each entry: { id, file, dataUrl, altText }
+
+    // ---------- helpers ----------
+    function generateAltText(filename) {
+      // simple SEO alt text based on filename (remove extension, replace hyphens/underscores)
+      let base = filename.replace(/\.[^.]+$/, '');
+      base = base.replace(/[-_]+/g, ' ');
+      base = base.replace(/\s+/g, ' ').trim();
+      if (base.length === 0) base = 'product image';
+      // add SEO friendly prefix
+      return `Etsy product · ${base.substring(0, 60)}`;
+    }
+
+    function render() {
+      // toggle empty / grid
+      if (images.length === 0) {
+        emptyState.style.display = 'block';
+        imageGrid.style.display = 'none';
+        actionBar.style.display = 'none';
+      } else {
+        emptyState.style.display = 'none';
+        imageGrid.style.display = 'grid';
+        actionBar.style.display = 'flex';
+        imageCountSpan.textContent = images.length;
+
+        // rebuild grid
+        imageGrid.innerHTML = '';
+        images.forEach((img, index) => {
+          const card = document.createElement('div');
+          card.className = 'image-card';
+          card.dataset.index = index;
+
+          const imgEl = document.createElement('img');
+          imgEl.src = img.dataUrl;
+          imgEl.alt = img.altText;
+          imgEl.loading = 'lazy';
+
+          const body = document.createElement('div');
+          body.className = 'card-body';
+
+          const nameSpan = document.createElement('div');
+          nameSpan.className = 'filename';
+          nameSpan.textContent = img.file.name;
+
+          const altSpan = document.createElement('div');
+          altSpan.className = 'alt-text';
+          altSpan.textContent = img.altText;
+
+          body.appendChild(nameSpan);
+          body.appendChild(altSpan);
+          card.appendChild(imgEl);
+          card.appendChild(body);
+          imageGrid.appendChild(card);
+        });
+      }
+    }
+
+    function addImages(files) {
+      if (!files || files.length === 0) return;
+      let loaded = 0;
+      for (const file of files) {
+        if (!file.type.startsWith('image/')) continue;
+        const reader = new FileReader();
+        const currentFile = file;
+        reader.onload = function(e) {
+          const dataUrl = e.target.result;
+          const altText = generateAltText(currentFile.name);
+          images.push({
+            id: Date.now() + Math.random() + '_' + currentFile.name,
+            file: currentFile,
+            dataUrl: dataUrl,
+            altText: altText
+          });
+          loaded++;
+          if (loaded === files.length) {
+            render();
+            reportEvent('images_uploaded', { count: files.length });
+          } else {
+            // progressive render for large batches? but we wait all.
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+      // if no valid images, still render
+      setTimeout(() => { if (loaded === 0) render(); }, 50);
+    }
+
+    // ---------- event listeners ----------
+    // file input
+    fileInput.addEventListener('change', function(e) {
+      if (this.files && this.files.length > 0) {
+        addImages(this.files);
+      }
+      this.value = ''; // allow re-upload same file
+    });
+
+    // drag & drop
+    uploadArea.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.classList.add('dragover');
+    });
+    uploadArea.addEventListener('dragleave', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.classList.remove('dragover');
+    });
+    uploadArea.addEventListener('drop', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        addImages(e.dataTransfer.files);
+      }
+    });
+
+    // click on upload area label works natively with input
+
+    // clear all
+    clearAllBtn.addEventListener('click', function() {
+      if (images.length === 0) return;
+      images = [];
+      render();
+      reportEvent('clear_all', {});
+    });
+
+    // export alt text list
+    exportAltBtn.addEventListener('click', function() {
+      if (images.length === 0) return;
+      let text = 'Alt-text export (Etsy batch)\n';
+      images.forEach((img, i) => {
+        text += `${i+1}. ${img.file.name} → ${img.altText}\n`;
+      });
+      navigator.clipboard.writeText(text).then(() => {
+        alert('✅ Alt‑text list copied to clipboard!');
+        reportEvent('export_alt_text', { count: images.length });
+      }).catch(() => {
+        // fallback
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('✅ Alt‑text list copied (fallback).');
+        reportEvent('export_alt_text_fallback', { count: images.length });
+      });
+    });
+
+    // initial render
+    render();
+
+    // report page view (anonymous)
+    reportEvent('page_view', { tool: 'batch_image_upload_etsy_alttext' });
+
+    // small demo: if you want to test with 5 beta users, we can simulate.
+    // but just a prototype.
+    console.log('🧪 Batch image upload prototype · Etsy alt‑text tool');
+  })();
+</script>
+
+<section data-organism-discovery="hub" style="margin:32px auto 20px;max-width:1040px;padding:16px;border-top:1px solid #d9e2ec;color:#475569;font:14px/1.5 system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <strong style="display:block;color:#0f172a;margin-bottom:6px">More free browser tools</strong>
+  <p style="margin:0 0 8px">This page is part of an autonomous micro-tool network. Explore the live tool directory and related utilities.</p>
+  <p style="margin:0"><a href="https://kingms888.github.io/do-digital-organism-index/" style="color:#0f766e;font-weight:700">Open the tool directory</a> </p>
+</section>
+</body>
+</html>
